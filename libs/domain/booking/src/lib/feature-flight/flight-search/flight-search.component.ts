@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, signal, WritableSignal } from '@angular/core';
+import { Component, computed, DestroyRef, effect, inject, Injector, runInInjectionContext, signal, untracked, WritableSignal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Flight, FlightFilter, injectTicketsFacade } from '../../logic-flight';
 import { FlightCardComponent, FlightFilterComponent } from '../../ui-flight';
@@ -17,28 +17,42 @@ import { FlightCardComponent, FlightFilterComponent } from '../../ui-flight';
 })
 export class FlightSearchComponent {
   private ticketsFacade = injectTicketsFacade();
+  private destroyRef = inject(DestroyRef);
+  private injector = inject(Injector);
 
-  protected filter1: WritableSignal<FlightFilter> = signal<FlightFilter>({
+  protected filter = signal<FlightFilter>({
     from: 'Paris',
     to: 'New York',
     urgent: false
   });
-  protected filter2 = signal<FlightFilter>({
-    from: 'Paris',
-    to: 'New York',
-    urgent: false
-  });
-  protected filter3 = signal({
-    from: 'Paris',
-    to: 'New York',
-    urgent: false
-  });
+  protected route = computed(
+    () => 'From ' + this.filter().from + ' to ' + this.filter().to + '.'
+  );
   protected basket: Record<number, boolean> = {
     3: true,
     5: true
   };
-  flight = [];
   protected flights$ = this.ticketsFacade.flights$;
+
+  constructor() {
+    this.initLoggerEffect();
+  }
+
+  private initLoggerEffect(): void {
+    this.destroyRef.onDestroy(() => console.log('Bye, bye! :('));
+    const loggerEffect = effect(() => {
+      const route = this.route();
+      untracked(() => console.log(route));
+    });
+    loggerEffect.destroy();
+  }
+
+  protected myLaterInvokedFn(): void {
+    runInInjectionContext(
+      this.injector,
+      () => effect(() => console.log(this.route()))
+    );
+  }
 
   protected search(filter: FlightFilter): void {
     this.filter.set(filter);
