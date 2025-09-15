@@ -1,4 +1,4 @@
-import { Component, DestroyRef, Input, OnChanges, SimpleChanges, inject } from '@angular/core';
+import { Component, DestroyRef, Injector, Input, OnChanges, SimpleChanges, inject } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NonNullableFormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { Store } from '@ngrx/store';
@@ -16,6 +16,7 @@ import { routerFeature } from '@flight-demo/shared/state'
 export class FlightEditComponent implements OnChanges {
   private store = inject(Store);
   private destroyRef = inject(DestroyRef);
+  private injector = inject(Injector);
 
   @Input() flight = initialFlight;
 
@@ -29,10 +30,12 @@ export class FlightEditComponent implements OnChanges {
 
   constructor() {
     this.store.select(routerFeature.selectRouteParams).pipe(
-      takeUntilDestroyed(this.destroyRef)
+      takeUntilDestroyed()
     ).subscribe(
       params => console.log(params)
     );
+
+    this.save();
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -43,5 +46,11 @@ export class FlightEditComponent implements OnChanges {
 
   protected save(): void {
     console.log(this.editForm.value);
+    this.injector.get(DestroyRef);
+    this.store.select(routerFeature.selectRouteParams).pipe(
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe(
+      params => console.log(params)
+    );
   }
 }
