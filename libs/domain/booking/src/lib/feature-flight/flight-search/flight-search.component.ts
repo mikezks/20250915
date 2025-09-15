@@ -35,23 +35,7 @@ export class FlightSearchComponent {
   protected flights$ = this.ticketsFacade.flights$;
 
   constructor() {
-    this.initLoggerEffect();
-  }
-
-  private initLoggerEffect(): void {
-    this.destroyRef.onDestroy(() => console.log('Bye, bye! :('));
-    const loggerEffect = effect(() => {
-      const route = this.route();
-      untracked(() => console.log(route));
-    });
-    loggerEffect.destroy();
-  }
-
-  protected myLaterInvokedFn(): void {
-    runInInjectionContext(
-      this.injector,
-      () => effect(() => console.log(this.route()))
-    );
+    effect(() => console.log(this.route()));
   }
 
   protected search(filter: FlightFilter): void {
