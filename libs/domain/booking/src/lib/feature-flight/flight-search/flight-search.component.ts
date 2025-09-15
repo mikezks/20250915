@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, signal, WritableSignal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Flight, FlightFilter, injectTicketsFacade } from '../../logic-flight';
 import { FlightCardComponent, FlightFilterComponent } from '../../ui-flight';
@@ -18,25 +18,36 @@ import { FlightCardComponent, FlightFilterComponent } from '../../ui-flight';
 export class FlightSearchComponent {
   private ticketsFacade = injectTicketsFacade();
 
-  protected filter = {
+  protected filter1: WritableSignal<FlightFilter> = signal<FlightFilter>({
     from: 'Paris',
     to: 'New York',
     urgent: false
-  };
+  });
+  protected filter2 = signal<FlightFilter>({
+    from: 'Paris',
+    to: 'New York',
+    urgent: false
+  });
+  protected filter3 = signal({
+    from: 'Paris',
+    to: 'New York',
+    urgent: false
+  });
   protected basket: Record<number, boolean> = {
     3: true,
     5: true
   };
+  flight = [];
   protected flights$ = this.ticketsFacade.flights$;
 
   protected search(filter: FlightFilter): void {
-    this.filter = filter;
+    this.filter.set(filter);
 
-    if (!this.filter.from || !this.filter.to) {
+    if (!this.filter().from || !this.filter().to) {
       return;
     }
 
-    this.ticketsFacade.search(this.filter);
+    this.ticketsFacade.search(this.filter());
   }
 
   protected delay(flight: Flight): void {
