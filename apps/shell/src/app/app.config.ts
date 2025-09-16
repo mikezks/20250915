@@ -15,9 +15,9 @@ export const appConfig: ApplicationConfig = {
     provideRouter(APP_ROUTES,
       withComponentInputBinding(),
       withRouterConfig({
-        paramsInheritanceStrategy: 'always'
+        paramsInheritanceStrategy: 'always',
+        defaultQueryParamsHandling: 'merge'
       }),
-      withDebugTracing(),
     ),
     provideHttpClient(),
     provideStore(),

@@ -1,26 +1,12 @@
-import { Component, effect, inject, input, numberAttribute, signal } from '@angular/core';
-import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
-import { AbstractControl, NonNullableFormBuilder, ReactiveFormsModule } from '@angular/forms';
-import { validatePassengerStatus } from '../../util-validation';
+import { Component, effect, inject, input, numberAttribute } from '@angular/core';
+import { toObservable, toSignal } from '@angular/core/rxjs-interop';
+import { NonNullableFormBuilder, ReactiveFormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
+import { injectFormQueryParamConnector } from '@flight-demo/shared/core';
+import { switchMap } from 'rxjs';
 import { initialPassenger } from '../../logic-passenger';
 import { PassengerService } from '../../logic-passenger/data-access/passenger.service';
-import { switchMap } from 'rxjs';
-import { Router, RouterLink } from '@angular/router';
-
-
-export function injectQueryParamsConnector(
-  formOrControl: AbstractControl,
-  queryParamName: string
-) {
-  const router = inject(Router);
-  formOrControl.valueChanges.pipe(
-    takeUntilDestroyed()
-  ).subscribe({
-    next: paramValue => router.navigate([], {
-      queryParams: { [queryParamName]: paramValue }
-    })
-  });
-}
+import { validatePassengerStatus } from '../../util-validation';
 
 
 @Component({
@@ -58,7 +44,11 @@ export class PassengerEditComponent {
    */
 
   constructor() {
-    injectQueryParamsConnector(this.editForm.controls.bonusMiles, 'bonusMiles');
+    injectFormQueryParamConnector(
+      this.editForm.controls.bonusMiles,
+      'bonusMiles',
+      { updateFormWithQueryParamInitially: true }
+    );
     effect(() => this.editForm.patchValue(this.passenger()));
   }
 
