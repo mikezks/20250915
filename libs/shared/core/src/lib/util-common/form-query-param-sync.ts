@@ -1,8 +1,8 @@
-import { inject } from "@angular/core";
-import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
+import { inject, Signal } from "@angular/core";
+import { takeUntilDestroyed, toSignal } from "@angular/core/rxjs-interop";
 import { AbstractControl } from "@angular/forms";
 import { ActivatedRoute, NavigationEnd, Router } from "@angular/router";
-import { filter, map, pairwise, pipe, startWith, switchMap, tap, withLatestFrom } from "rxjs";
+import { filter, map, Observable, pairwise, pipe, startWith, Subscription, switchMap, tap, withLatestFrom } from "rxjs";
 
 
 export type QueryParamsConnectorConfig = {
@@ -50,17 +50,19 @@ function isNullishOrEmptyString(value: unknown): boolean {
   return (value ?? null) === null || value === '';
 }
 
-function handleQueryParamSync(
-  formOrControl: AbstractControl,
+function handleQueryParamSync<T>(
+  formOrControl: AbstractControl<T>,
   router: Router,
   state: QueryParamsConnectorState
-): void {
+): T {
   if (
     isNewNavigation(state)
     && state.updateForm
     && state.queryParam
   ) {
-    formOrControl.setValue(state.queryParam, { emitEvent: false });
+    formOrControl.setValue(state.queryParam as T, { emitEvent: false });
+
+    return state.queryParam as T;
   } else if (
     (
       !isInitialNavigation(state)
@@ -76,6 +78,8 @@ function handleQueryParamSync(
       [state.queryParamName]: state.controlValue
     }});
   }
+
+  return state.controlValue as T;
 }
 
 function routerNavigationEnd(router: Router) {
@@ -105,11 +109,11 @@ function addQueryParamState<T>(
   );
 }
 
-export function injectFormQueryParamConnector(
-  formOrControl: AbstractControl,
+function getFormQueryParamConnector<T>(
+  formOrControl: AbstractControl<T>,
   queryParamName: string,
   config?: Partial<QueryParamsConnectorConfig>
-) {
+): Observable<T> {
   const router = inject(Router);
   const route = inject(ActivatedRoute);
 
@@ -117,7 +121,7 @@ export function injectFormQueryParamConnector(
     updateFormWithQueryParamInitially: updateForm 
   } = mergeQueryParamsConnectorConfig(config);
 
-  routerNavigationEnd(router).pipe(
+  return routerNavigationEnd(router).pipe(
     sameUrlState(() => router.url),
     addQueryParamState(route, queryParamName),
     switchMap(({ sameUrl, queryParam }, navIndex) => formOrControl.valueChanges.pipe(
@@ -125,8 +129,28 @@ export function injectFormQueryParamConnector(
         sameUrl, navIndex, valueIndex, updateForm, 
         queryParamName, queryParam, controlValue, 
       }) as QueryParamsConnectorState),
-      tap(state => handleQueryParamSync(formOrControl, router, state)),
+      map(state => handleQueryParamSync(formOrControl, router, state))
     )),
     takeUntilDestroyed()
+  );
+}
+
+export function injectFormQueryParamConnector<T>(
+  formOrControl: AbstractControl<T>,
+  queryParamName: string,
+  config?: Partial<QueryParamsConnectorConfig>
+): Subscription {
+  return getFormQueryParamConnector(
+    formOrControl, queryParamName, config
   ).subscribe();
+}
+
+export function connectQueryParamSignal<T>(
+  formOrControl: AbstractControl<T>,
+  queryParamName: string,
+  config?: Partial<QueryParamsConnectorConfig>
+): Signal<T> {
+  return toSignal(getFormQueryParamConnector(
+    formOrControl, queryParamName, config
+  ), { initialValue: formOrControl.getRawValue() });
 }

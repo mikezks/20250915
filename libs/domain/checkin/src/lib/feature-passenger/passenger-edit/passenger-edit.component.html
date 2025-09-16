@@ -44,7 +44,8 @@
     </form>
 
     <p>Status: {{ passengerResource.status() }}</p>
-
+    <p>Bonus Miles: {{ bonusMiles() }}</p>
+    
     <div class="form-group">
       <a
         [routerLink]="['..', id()-1]"
