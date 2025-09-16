@@ -35,7 +35,7 @@ function mergeQueryParamsConnectorConfig(
 function isNewNavigation(state: QueryParamsConnectorState): boolean {
   return (
     (!state.sameUrl && state.valueIndex === 0)
-    || (state.navIndex === 0 && state.valueIndex === 1)
+    || (state.navIndex === 0 && state.valueIndex === 0)
   );
 }
 
@@ -44,6 +44,10 @@ function isInitialNavigation(state: QueryParamsConnectorState): boolean {
     state.navIndex === 0
     && state.valueIndex === 0
   );
+}
+
+function isNullishOrEmptyString(value: unknown): boolean {
+  return (value ?? null) === null || value === '';
 }
 
 function handleQueryParamSync(
@@ -61,6 +65,11 @@ function handleQueryParamSync(
     (
       !isInitialNavigation(state)
       && state.controlValue !== state.queryParam
+    ) || (
+      isInitialNavigation(state)
+      && isNullishOrEmptyString(state.queryParam)
+    ) || (!state.updateForm
+      && state.controlValue
     )
   ) {
     router.navigate([], { queryParams: {
