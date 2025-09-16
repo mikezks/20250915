@@ -2,7 +2,7 @@ import { inject } from "@angular/core";
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 import { AbstractControl } from "@angular/forms";
 import { ActivatedRoute, NavigationEnd, Router } from "@angular/router";
-import { filter, map, of, pairwise, startWith, switchMap, tap, withLatestFrom } from "rxjs";
+import { filter, map, pairwise, pipe, startWith, switchMap, tap, withLatestFrom } from "rxjs";
 
 
 export type QueryParamsConnectorConfig = {
@@ -78,6 +78,32 @@ function handleQueryParamSync(
   }
 }
 
+function routerNavigationEnd(router: Router) {
+  return router.events.pipe(
+    filter(event => event instanceof NavigationEnd),
+    startWith(true)
+  );
+}
+
+function sameUrlState(getUrl: () => string) {
+  return pipe(
+    map(() => getUrl().split('?')[0]),
+    pairwise(),
+    map(([prev, curr]) => ({ sameUrl: prev === curr })),
+  );
+}
+
+function addQueryParamState<T>(
+  route: ActivatedRoute,
+  queryParamName: string
+) {
+  return pipe(
+    withLatestFrom<T, unknown[]>(route.queryParamMap.pipe(
+      map(params => params.get(queryParamName))
+    )),
+    map(([state, queryParam]) => ({ ...state, queryParam }))
+  );
+}
 
 export function injectFormQueryParamConnector(
   formOrControl: AbstractControl,
@@ -91,24 +117,15 @@ export function injectFormQueryParamConnector(
     updateFormWithQueryParamInitially: updateForm 
   } = mergeQueryParamsConnectorConfig(config);
 
-  router.events.pipe(
-    filter(event => event instanceof NavigationEnd),
-    startWith(true),
-    map(() => router.url.split('?')[0]),
-    pairwise(),
-    map(([prev, curr]) => ({ sameUrl: prev === curr })),
-    withLatestFrom(route.queryParamMap.pipe(
-      map(params => params.get(queryParamName))
-    )),
-    map(([state, queryParam]) => ({ ...state, queryParam })),
+  routerNavigationEnd(router).pipe(
+    sameUrlState(() => router.url),
+    addQueryParamState(route, queryParamName),
     switchMap(({ sameUrl, queryParam }, navIndex) => formOrControl.valueChanges.pipe(
-      switchMap((controlValue, valueIndex) => of(controlValue).pipe(
-        map(() => ({
-          sameUrl, navIndex, valueIndex, updateForm, 
-          queryParamName, queryParam, controlValue, 
-        }) as QueryParamsConnectorState),
-        tap(state => handleQueryParamSync(formOrControl, router, state)),
-      )),
+      map((controlValue, valueIndex) => ({
+        sameUrl, navIndex, valueIndex, updateForm, 
+        queryParamName, queryParam, controlValue, 
+      }) as QueryParamsConnectorState),
+      tap(state => handleQueryParamSync(formOrControl, router, state)),
     )),
     takeUntilDestroyed()
   ).subscribe();
