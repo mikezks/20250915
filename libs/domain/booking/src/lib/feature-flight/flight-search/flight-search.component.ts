@@ -3,8 +3,7 @@ import { Component, computed, effect, signal, untracked } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Flight, FlightFilter, injectTicketsFacade } from '../../logic-flight';
 import { FlightCardComponent, FlightFilterComponent } from '../../ui-flight';
-import { SIGNAL } from '@angular/core/primitives/signals';
-import { injectSignalsLogger } from '@flight-demo/shared/core';
+import { ReactiveNode } from 'node_modules/@angular/core/graph.d';
 
 
 @Component({
@@ -35,14 +34,21 @@ export class FlightSearchComponent {
   protected flights = this.ticketsFacade.flights;
 
   constructor() {
-    const loggerEffect = effect(() => console.log(this.route()), { debugName: 'customEffect' });
-    const searchEffect = effect(() => {
+    let activeConsumer: ReactiveNode | undefined;
+    
+    const shallLogRoute = signal(true);
+    const defaultMessage = signal('No route available.');
+    activeConsumer = effect(() => {
+      if (shallLogRoute()) {
+        console.log(this.route());
+      } else {
+        console.log(defaultMessage());
+      }
+    });
+    effect(() => {
       this.filter();
       untracked(() => this.search());
     });
-
-    // console.log(this.route[SIGNAL]);
-    injectSignalsLogger();
   }
 
   protected search(): void {
