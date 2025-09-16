@@ -5,12 +5,14 @@ import { validatePassengerStatus } from '../../util-validation';
 import { initialPassenger } from '../../logic-passenger';
 import { PassengerService } from '../../logic-passenger/data-access/passenger.service';
 import { switchMap } from 'rxjs';
+import { RouterLink } from '@angular/router';
 
 
 @Component({
   selector: 'app-passenger-edit',
   imports: [
-    ReactiveFormsModule
+    ReactiveFormsModule,
+    RouterLink
   ],
   templateUrl: './passenger-edit.component.html'
 })
@@ -27,14 +29,18 @@ export class PassengerEditComponent {
   });
 
   id = input(0, { transform: numberAttribute });
-  private id$ = toObservable(this.id);
-  private passenger$ = this.id$.pipe(
-    switchMap(id => this.passengerService.findById(id))
+  private passenger = toSignal(
+    toObservable(this.id).pipe(
+      switchMap(id => this.passengerService.findById(id))
+    ), { initialValue: initialPassenger }
   );
-  passenger = toSignal(this.passenger$, {
-    // requireSync: true
-    initialValue: initialPassenger
-  });
+
+  /**
+   * switchMap  -> cancel
+   * concatMap  -> wait
+   * exhaustMap -> ignore while inner is still running
+   * mergeMap   -> parallel
+   */
 
   constructor() {
     effect(() => this.editForm.patchValue(this.passenger()));
