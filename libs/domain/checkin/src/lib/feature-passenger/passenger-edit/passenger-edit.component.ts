@@ -44,25 +44,19 @@ export class PassengerEditComponent {
   });
 
   id = input(0, { transform: numberAttribute });
-  private passenger = toSignal(
-    toObservable(this.id).pipe(
-      switchMap(id => this.passengerService.findById(id))
-    ), { initialValue: initialPassenger }
-  );
-
-  /**
-   * switchMap  -> cancel
-   * concatMap  -> wait
-   * exhaustMap -> ignore while inner is still running
-   * mergeMap   -> parallel
-   */
-
+  protected passengerResource = this.passengerService.findByIdAsResource(this.id);
+  
   constructor() {
     injectQueryParamsConnector(this.editForm.controls.bonusMiles, 'bonusMiles');
-    effect(() => this.editForm.patchValue(this.passenger()));
+    effect(() => {
+      if (this.passengerResource.hasValue()) {
+        this.editForm.patchValue(this.passengerResource.value());
+      }
+    });
   }
 
   protected save(): void {
+    this.passengerResource.set(this.editForm.getRawValue());
     console.log(this.editForm.value);
   }
 }
