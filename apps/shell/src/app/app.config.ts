@@ -1,5 +1,5 @@
 import { provideHttpClient } from '@angular/common/http';
-import { ApplicationConfig, provideBrowserGlobalErrorListeners, provideZoneChangeDetection } from '@angular/core';
+import { ApplicationConfig, provideBrowserGlobalErrorListeners, provideCheckNoChangesConfig, provideZoneChangeDetection } from '@angular/core';
 import { provideRouter, withComponentInputBinding, withRouterConfig } from '@angular/router';
 import { provideRouterFeature } from '@flight-demo/shared/state';
 import { provideEffects } from '@ngrx/effects';
@@ -11,7 +11,11 @@ import { APP_ROUTES } from './app.routes';
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
-    provideZoneChangeDetection({ eventCoalescing: true }),
+    provideZoneChangeDetection(),
+    /* provideCheckNoChangesConfig({
+      exhaustive: true,
+      interval: 2_000
+    }), */
     provideRouter(APP_ROUTES,
       withComponentInputBinding(),
       withRouterConfig({
