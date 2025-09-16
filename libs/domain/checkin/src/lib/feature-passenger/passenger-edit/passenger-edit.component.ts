@@ -1,7 +1,7 @@
 import { Component, effect, inject, input, numberAttribute } from '@angular/core';
 import { NonNullableFormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { connectQueryParamSignal, injectFormQueryParamConnector } from '@flight-demo/shared/core';
+import { connectFormQueryParamSignal } from '@flight-demo/shared/core';
 import { PassengerService } from '../../logic-passenger/data-access/passenger.service';
 import { validatePassengerStatus } from '../../util-validation';
 
@@ -25,7 +25,7 @@ export class PassengerEditComponent {
       validatePassengerStatus(['A', 'B', 'C'])
     ]]
   });
-  protected bonusMiles = connectQueryParamSignal(
+  protected bonusMiles = connectFormQueryParamSignal(
     this.editForm.controls.bonusMiles,
     'bonusMiles'
   );

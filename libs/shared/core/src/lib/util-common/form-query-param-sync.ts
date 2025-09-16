@@ -145,7 +145,7 @@ export function injectFormQueryParamConnector<T>(
   ).subscribe();
 }
 
-export function connectQueryParamSignal<T>(
+export function connectFormQueryParamSignal<T>(
   formOrControl: AbstractControl<T>,
   queryParamName: string,
   config?: Partial<QueryParamsConnectorConfig>
