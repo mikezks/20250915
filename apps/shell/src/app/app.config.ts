@@ -1,6 +1,6 @@
 import { provideHttpClient } from '@angular/common/http';
 import { ApplicationConfig, provideBrowserGlobalErrorListeners, provideZoneChangeDetection } from '@angular/core';
-import { provideRouter, withComponentInputBinding, withDebugTracing, withRouterConfig } from '@angular/router';
+import { provideRouter, withComponentInputBinding, withRouterConfig } from '@angular/router';
 import { provideRouterFeature } from '@flight-demo/shared/state';
 import { provideEffects } from '@ngrx/effects';
 import { provideStore } from '@ngrx/store';
@@ -17,7 +17,6 @@ export const appConfig: ApplicationConfig = {
       withRouterConfig({
         paramsInheritanceStrategy: 'always'
       }),
-      withDebugTracing(),
     ),
     provideHttpClient(),
     provideStore(),
