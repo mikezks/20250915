@@ -1,8 +1,8 @@
 import { DatePipe, NgStyle } from '@angular/common';
-import { ChangeDetectionStrategy, Component, input, model, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input, linkedSignal, model, output } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { injectCdBlink } from '@flight-demo/shared/core';
-import { Flight } from '../../logic-flight';
+import { Flight, initialFlight } from '../../logic-flight';
 
 
 @Component({
@@ -17,7 +17,7 @@ import { Flight } from '../../logic-flight';
       class="card"
       [ngStyle]="{ 'background-color': selected() ? 'rgb(204, 197, 185)' : 'white' }"
     >
-      @let flight = item();
+      @let flight = this.flight();
       <div class="card-header">
         <h2 class="card-title">{{ flight.from }} - {{ flight.to }}</h2>
       </div>
@@ -54,12 +54,21 @@ export class FlightCardComponent {
   readonly item = input.required<Flight>();
   readonly selected = model(false);
   readonly delayTrigger = output<Flight>();
+  protected flight = linkedSignal(() => this.item());
+
+  constructor() {
+    /* setTimeout(() => this.flight.set({
+      ...this.item(),
+      from: 'Los Angeles',
+      date: new Date().toISOString()
+    }), 3_000); */
+  }
 
   toggleSelection(): void {
     this.selected.update(curr => !curr);
   }
 
   delay(): void {
-    this.delayTrigger.emit(this.item());
+    this.delayTrigger.emit(this.flight());
   }
 }

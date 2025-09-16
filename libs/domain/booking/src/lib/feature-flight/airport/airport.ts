@@ -47,13 +47,15 @@ export class Airport {
     source: this.countries,
     computation: source => source[0]
   });
-  protected regions = linkedSignal({
-    source: this.country,
-    computation: source => COUNTRIES_WITH_REGIONS[source]
-  });
+  protected regions = linkedSignal(
+    () => COUNTRIES_WITH_REGIONS[this.country()]
+  );
   protected region = linkedSignal({
     source: this.regions,
-    computation: source => source[0]
+    computation: (sourceValue, prev) => {
+      console.log(prev?.source, prev?.value);
+      return sourceValue[0];
+    }
   });
 
   constructor() {
