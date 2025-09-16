@@ -13,14 +13,14 @@ export const defaultQueryParamsConnectorConfig: QueryParamsConnectorConfig = {
   updateFormWithQueryParamInitially: true
 };
 
-export type QueryParamsConnectorState = {
+export type QueryParamsConnectorState<T> = {
   sameUrl: boolean;
   navIndex: number;
   valueIndex: number;
   updateForm: QueryParamsConnectorConfig['updateFormWithQueryParamInitially'];
   queryParamName: string;
-  queryParam: unknown;
-  controlValue: unknown;
+  queryParam: T;
+  controlValue: T;
 };
 
 function mergeQueryParamsConnectorConfig(
@@ -32,14 +32,14 @@ function mergeQueryParamsConnectorConfig(
   };
 }
 
-function isNewNavigation(state: QueryParamsConnectorState): boolean {
+function isNewNavigation<T>(state: QueryParamsConnectorState<T>): boolean {
   return (
     (!state.sameUrl && state.valueIndex === 0)
     || (state.navIndex === 0 && state.valueIndex === 0)
   );
 }
 
-function isInitialNavigation(state: QueryParamsConnectorState): boolean {
+function isInitialNavigation<T>(state: QueryParamsConnectorState<T>): boolean {
   return (
     state.navIndex === 0
     && state.valueIndex === 0
@@ -53,16 +53,16 @@ function isNullishOrEmptyString(value: unknown): boolean {
 function handleQueryParamSync<T>(
   formOrControl: AbstractControl<T>,
   router: Router,
-  state: QueryParamsConnectorState
+  state: QueryParamsConnectorState<T>
 ): T {
   if (
     isNewNavigation(state)
     && state.updateForm
     && state.queryParam
   ) {
-    formOrControl.setValue(state.queryParam as T, { emitEvent: false });
+    formOrControl.setValue(state.queryParam, { emitEvent: false });
 
-    return state.queryParam as T;
+    return state.queryParam;
   } else if (
     (
       !isInitialNavigation(state)
@@ -79,7 +79,7 @@ function handleQueryParamSync<T>(
     }});
   }
 
-  return state.controlValue as T;
+  return state.controlValue;
 }
 
 function routerNavigationEnd(router: Router) {
@@ -128,7 +128,7 @@ function getFormQueryParamConnector<T>(
       map((controlValue, valueIndex) => ({
         sameUrl, navIndex, valueIndex, updateForm, 
         queryParamName, queryParam, controlValue, 
-      }) as QueryParamsConnectorState),
+      }) as QueryParamsConnectorState<T>),
       map(state => handleQueryParamSync(formOrControl, router, state))
     )),
     takeUntilDestroyed()
