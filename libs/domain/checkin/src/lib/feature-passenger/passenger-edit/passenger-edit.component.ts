@@ -1,8 +1,8 @@
+import { httpResource } from '@angular/common/http';
 import { Component, effect, inject, input, numberAttribute } from '@angular/core';
 import { NonNullableFormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { connectFormQueryParamSignal } from '@flight-demo/shared/core';
-import { PassengerService } from '../../logic-passenger/data-access/passenger.service';
+import { Passenger } from '../../logic-passenger';
 import { validatePassengerStatus } from '../../util-validation';
 
 
@@ -15,7 +15,6 @@ import { validatePassengerStatus } from '../../util-validation';
   templateUrl: './passenger-edit.component.html'
 })
 export class PassengerEditComponent {
-  private passengerService = inject(PassengerService);
   protected editForm = inject(NonNullableFormBuilder).group({
     id: [0],
     firstName: [''],
@@ -25,14 +24,12 @@ export class PassengerEditComponent {
       validatePassengerStatus(['A', 'B', 'C'])
     ]]
   });
-  /* protected bonusMiles = connectFormQueryParamSignal(
-    this.editForm.controls.bonusMiles,
-    'bonusMiles',
-    { updateFormWithQueryParamInitially: false }
-  ); */
 
   id = input(0, { transform: numberAttribute });
-  protected passengerResource = this.passengerService.findByIdAsResource(this.id);
+  protected passengerResource = httpResource<Passenger>(() => ({
+    url: 'https://demo.angulararchitects.io/api/passenger',
+    params: { id: this.id() }
+  }));
   
   constructor() {
     effect(() => {

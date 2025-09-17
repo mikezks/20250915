@@ -2,7 +2,7 @@ import { HttpClient, HttpParams, HttpHeaders } from "@angular/common/http";
 import { Injectable, ResourceRef, Signal, inject, resource } from "@angular/core";
 import { rxResource } from "@angular/core/rxjs-interop";
 import { Observable } from "rxjs";
-import { Passenger } from "../model/passenger";
+import { initialPassenger, Passenger } from "../model/passenger";
 
 
 @Injectable({
@@ -46,7 +46,9 @@ export class PassengerService {
 
   findAsResource(filter: Signal<{ firstname: string, lastname: string }>): ResourceRef<Passenger[] | undefined> {
     return rxResource({
-      params: filter,
+      params: () => filter().firstname === initialPassenger.firstName
+        ? undefined
+        : filter(),
       stream: ({ params: filter }) => this.find(filter.firstname, filter.lastname)
     });
   }
