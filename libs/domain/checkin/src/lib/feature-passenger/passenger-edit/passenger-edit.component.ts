@@ -36,27 +36,17 @@ const passengerSchema = schema<Passenger>(passengerPath => {
 })
 export class PassengerEditComponent {
   // (1) Data Model: Writable Signal
-  private passenger = signal(initialPassenger);
-
-  // (2) Field State: Meta Data - valid, dirty, touched, etc.
-  protected editForm = form(this.passenger, passengerSchema);
-
-  id = input(0, { transform: numberAttribute });
   protected passengerResource = httpResource<Passenger>(() => ({
     url: 'https://demo.angulararchitects.io/api/passenger',
     params: { id: this.id() }
-  }));
-  
-  constructor() {
-    effect(() => {
-      if (this.passengerResource.hasValue()) {
-        this.passenger.set(this.passengerResource.value());
-      }
-    });
-  }
+  }), { defaultValue: initialPassenger });
 
+  // (2) Field State: Meta Data - valid, dirty, touched, etc.
+  protected editForm = form(this.passengerResource.value, passengerSchema);
+
+  id = input(0, { transform: numberAttribute });
+  
   protected save(): void {
-    this.passengerResource.set(this.editForm().value());
     console.log(this.editForm().value());
   }
 }
