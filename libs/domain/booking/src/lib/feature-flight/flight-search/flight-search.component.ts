@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Flight, FlightFilter } from '../../logic-flight';
 import { FlightService } from '../../logic-flight/data-access/flight.service';
 import { FlightCardComponent, FlightFilterComponent } from '../../ui-flight';
+import { BookingStore } from '../../logic-flight/state/booking.store';
 
 
 @Component({
@@ -19,6 +20,7 @@ import { FlightCardComponent, FlightFilterComponent } from '../../ui-flight';
 })
 export class FlightSearchComponent {
   private flightService = inject(FlightService);
+  private store = inject(BookingStore);
 
   protected filter = {
     from: 'London',
@@ -30,6 +32,14 @@ export class FlightSearchComponent {
     5: true
   };
   protected flights: Flight[] = [];
+
+  constructor() {
+    this.store.filter.from();
+    this.store.basket;
+    this.store.flights;
+    this.store.delayedFlights();
+    this.store.setFilter();
+  }
 
   protected search(filter: FlightFilter): void {
     this.filter = filter;
