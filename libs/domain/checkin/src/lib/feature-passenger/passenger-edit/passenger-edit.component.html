@@ -4,27 +4,27 @@
   </div>
 
   <div class="card-body">
-    <form [formGroup]="editForm">
+    <form>
       <div class="form-group">
         <label for="id">ID:</label>
-        <input id="id" formControlName="id" type="number" class="form-control" />
+        <input id="id" [control]="editForm.id" type="number" class="form-control" />
       </div>
 
       <div class="form-group">
         <label for="firstname">Firstname:</label>
-        <input id="firstname" formControlName="firstName" class="form-control" />
+        <input id="firstname" [control]="editForm.firstName" class="form-control" />
       </div>
 
       <div class="form-group">
         <label for="name">Lastname:</label>
-        <input id="name" formControlName="name" class="form-control" />
+        <input id="name" [control]="editForm.name" class="form-control" />
       </div>
 
       <div class="form-group">
         <label for="bonusMiles">Bonus Miles:</label>
         <input
           id="bonusMiles"
-          formControlName="bonusMiles"
+          [control]="editForm.bonusMiles"
           type="number"
           class="form-control"
         />
@@ -32,19 +32,18 @@
 
       <div class="form-group">
         <label for="status">Status:</label>
-        <input id="status" formControlName="passengerStatus" class="form-control" />
+        <input id="status" [control]="editForm.passengerStatus" class="form-control" />
       </div>
-      @if (editForm.controls.passengerStatus.hasError('passengerStatus')) {
+      <!-- @if (editForm.controls.passengerStatus.hasError('passengerStatus')) {
         <div class="alert alert-danger">
           Please enter a valid passenger status.<br>
           The following values are allowed:
           {{ editForm.controls.passengerStatus.errors?.['passengerStatus'].validStatus.join(', ') }}
         </div>
-      }
+      } -->
     </form>
 
     <p>Status: {{ passengerResource.status() }}</p>
-    <!-- <p>Bonus Miles: {{ bonusMiles() }}</p> -->
     
     <div class="form-group">
       <a
@@ -61,7 +60,7 @@
       </button>
       <button
         (click)="save()"
-        [disabled]="!editForm.valid"
+        [disabled]="!editForm().valid()"
         class="btn btn-default"
       >
         Save
