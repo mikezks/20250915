@@ -25,10 +25,11 @@ export class PassengerEditComponent {
       validatePassengerStatus(['A', 'B', 'C'])
     ]]
   });
-  protected bonusMiles = connectFormQueryParamSignal(
+  /* protected bonusMiles = connectFormQueryParamSignal(
     this.editForm.controls.bonusMiles,
-    'bonusMiles'
-  );
+    'bonusMiles',
+    { updateFormWithQueryParamInitially: false }
+  ); */
 
   id = input(0, { transform: numberAttribute });
   protected passengerResource = this.passengerService.findByIdAsResource(this.id);
