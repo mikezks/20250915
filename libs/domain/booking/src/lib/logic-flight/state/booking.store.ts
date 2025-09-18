@@ -1,13 +1,18 @@
-import { patchState, signalStore, withComputed, withMethods, withState } from '@ngrx/signals';
+import { patchState, signalStore, withComputed, withMethods, withProps, withState } from '@ngrx/signals';
 import { Flight } from '../model/flight';
 import { computed, inject } from '@angular/core';
 import { FlightFilter } from '../model/flight-filter';
 import { FlightService } from '../data-access/flight.service';
 
 
-export const BookingStore = signalStore(
-  withState({
-    filter: {
+export interface BookingState {
+  filter: FlightFilter;
+  basket: Record<number, boolean>;
+  flights: Flight[]
+}
+
+export const initialBookingState: BookingState = {
+  filter: {
       from: 'Hamburg',
       to: 'Graz',
       urgent: false
@@ -15,29 +20,38 @@ export const BookingStore = signalStore(
     basket: {
       3: true,
       5: true,
-    } as Record<number, boolean>,
-    flights: [] as Flight[]
-  }),
+    },
+    flights: [],
+}
+
+
+export const BookingStore = signalStore(
+  { providedIn: 'root' },
+  // State
+  withState<BookingState>(initialBookingState),
   withComputed(store => ({
     delayedFlights: computed(
       () => store.flights().filter(flight => flight.delayed)
     ),
   })),
-  withMethods(store => {
-    const flightService = inject(FlightService);
-
-    return ({
+  // Updater
+  withMethods(store => ({
       setFilter: (filter: FlightFilter) => patchState(store, { filter }),
       setFlights: (flights: Flight[]) => patchState(store, { flights }),
-      loadFlights: () => {
-        flightService.find(
-          store.filter.from(),
-          store.filter.to(),
-          store.filter.urgent()
-        ).subscribe({
-          next: flights => patchState(store, { flights }),
-        })
-      }
-    })
-  }),
+  })),
+  // Side-Effects
+  withMethods((
+    store,
+    flightService = inject(FlightService)
+  ) =>  ({
+    loadFlights: () => {
+      flightService.find(
+        store.filter.from(),
+        store.filter.to(),
+        store.filter.urgent()
+      ).subscribe({
+        next: flights => store.setFlights(flights)
+      })
+    }
+  }))
 );
