@@ -1,10 +1,9 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Flight, FlightFilter } from '../../logic-flight';
-import { FlightService } from '../../logic-flight/data-access/flight.service';
-import { FlightCardComponent, FlightFilterComponent } from '../../ui-flight';
+import { Flight } from '../../logic-flight';
 import { BookingStore } from '../../logic-flight/state/booking.store';
+import { FlightCardComponent, FlightFilterComponent } from '../../ui-flight';
 
 
 @Component({
@@ -19,25 +18,7 @@ import { BookingStore } from '../../logic-flight/state/booking.store';
   templateUrl: './flight-search.component.html',
 })
 export class FlightSearchComponent {
-  private flightService = inject(FlightService);
-  private store = inject(BookingStore);
-
-  protected filter = this.store.filter;
-  protected basket = this.store.basket;
-  protected flights = this.store.flights;
-
-  constructor() {
-  }
-
-  protected search(filter: FlightFilter): void {
-    this.store.setFilter(filter);
-
-    if (!this.filter().from || !this.filter().to) {
-      return;
-    }
-
-    this.store.loadFlights();
-  }
+  protected store = inject(BookingStore);
 
   protected delay(flight: Flight): void {
     const oldFlight = flight;
@@ -50,12 +31,8 @@ export class FlightSearchComponent {
       delayed: true
     };
 
-    this.store.setFlights(this.flights().map(
+    this.store.setFlights(this.store.flights().map(
       flight => flight.id === newFlight.id ? newFlight : flight
     ));
-  }
-
-  protected reset(): void {
-    this.store.setFlights([]);
   }
 }
