@@ -9,18 +9,14 @@ import { initialPassenger, Passenger } from '../../logic-passenger';
 // (3) Field Logic: required, custom validator, disabled, hidden, readonly, etc.
 const passengerSchema = schema<Passenger>(passengerPath => {
   required(passengerPath.name);
-  validate(passengerPath.passengerStatus, ({ value }) => {
-    const validStatus = ['A', 'C'];
-
-    if (!validStatus.includes(value())) {
-      return customError({
+  validate(passengerPath.passengerStatus, ({ value }) =>
+    !['A', 'C'].includes(value())
+      ? customError({
         kind: 'passengerStatus',
         message: 'The field name has a passengerStatus error - please fix this!'
-      });
-    }
-
-    return undefined;
-  });
+      })
+      : undefined
+  );
 });
 
 
